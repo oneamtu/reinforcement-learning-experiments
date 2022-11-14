@@ -68,7 +68,7 @@ class Simulator:
         optimal_ratios = np.zeros((self.num_arms, num_steps))
 
         for i in range(num_runs):
-            print(f"Epoch {i}")
+            # print(f"Epoch {i}")
             bandit = Bandit(self.num_arms)
             sample_average_agent = EpsilonGreedyAgent(self.num_arms, lambda n: 1/float(n))
             constant_step_agent = EpsilonGreedyAgent(self.num_arms, lambda n: 0.1)
