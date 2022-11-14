@@ -87,9 +87,9 @@ class Simulator:
 
                 optimal_actions = np.argmax(bandit.means)
 
-                rewards[agent_i][step] += reward/num_runs
+                rewards[agent_i][step] += reward/float(num_runs)
                 if action in np.array(optimal_actions):
-                    optimal_ratios[agent_i][step] += reward/num_runs
+                    optimal_ratios[agent_i][step] += 1/float(num_runs)
             
             bandit.update()
 
