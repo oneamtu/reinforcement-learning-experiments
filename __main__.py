@@ -3,8 +3,16 @@ import sys
 import numpy as np
 
 def argmaxes(array):
-    results = np.argwhere(array == np.amax(array))
-    return results.reshape(len(results))
+    max = array[0]
+    results = []
+    for i, e in enumerate(array):
+        if e > max:
+            max = e
+            results.clear()
+            results.append(i)
+        elif e == max:
+            results.append(i)
+    return np.array(results)
 
 class Bandit(object):
     """
@@ -38,6 +46,7 @@ class EpsilonGreedyAgent:
         self.epsilon = epsilon
         self.q_n = np.zeros(num_actions)
         self.action = None
+        self.action_counter = np.zeros(num_actions)
     
     def policy(self):
         if np.random.random() < self.epsilon:
@@ -53,10 +62,11 @@ class EpsilonGreedyAgent:
                 action = np.random.choice(greedy_action)
         
         self.action = action
+        self.action_counter[action] += 1
         return action
     
-    def update(self, step, reward):
-        self.q_n[self.action] += self.a_n(step)*(reward - self.q_n[self.action])
+    def update(self, reward):
+        self.q_n[self.action] += self.a_n(self.action_counter[self.action])*(reward - self.q_n[self.action])
 
 class Simulator:
     """
@@ -88,12 +98,10 @@ class Simulator:
             for agent_i, agent in enumerate(agents):
                 action = agent.policy()
                 reward = bandit.pull(action)
-                agent.update(step+1, reward)
-
-                optimal_actions = argmaxes(bandit.means)
+                agent.update(reward)
 
                 rewards[agent_i][step] += reward
-                if action in np.array(optimal_actions):
+                if bandit.means[action] == np.max(bandit.means):
                     optimal_ratios[agent_i][step] += 1
             
             bandit.update()
