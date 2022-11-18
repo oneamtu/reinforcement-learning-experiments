@@ -2,6 +2,9 @@ import sys
 
 import numpy as np
 
+def argmaxes(array):
+    results = np.argwhere(array == np.amax(array))
+    return results.reshape(len(results))
 
 class Bandit(object):
     """
@@ -41,7 +44,7 @@ class EpsilonGreedyAgent:
             action = np.random.choice(len(self.q_n))
 
         else:
-            greedy_action = np.argmax(self.q_n)
+            greedy_action = argmaxes(self.q_n)
 
             # break ties randomly
             if greedy_action.size == 1:
@@ -68,13 +71,15 @@ class Simulator:
         optimal_ratios = np.zeros((self.num_arms, num_steps))
 
         for i in range(num_runs):
-            # print(f"Epoch {i}")
             bandit = Bandit(self.num_arms)
             sample_average_agent = EpsilonGreedyAgent(self.num_arms, lambda n: 1/float(n))
             constant_step_agent = EpsilonGreedyAgent(self.num_arms, lambda n: 0.1)
             agents = [sample_average_agent, constant_step_agent]
 
             self.run_epoch(bandit, agents, num_runs, num_steps, rewards, optimal_ratios)
+
+        rewards = rewards / float(num_runs)
+        optimal_ratios = optimal_ratios / float(num_runs)
 
         return rewards, optimal_ratios
 
@@ -85,11 +90,11 @@ class Simulator:
                 reward = bandit.pull(action)
                 agent.update(step+1, reward)
 
-                optimal_actions = np.argmax(bandit.means)
+                optimal_actions = argmaxes(bandit.means)
 
-                rewards[agent_i][step] += reward/float(num_runs)
+                rewards[agent_i][step] += reward
                 if action in np.array(optimal_actions):
-                    optimal_ratios[agent_i][step] += 1/float(num_runs)
+                    optimal_ratios[agent_i][step] += 1
             
             bandit.update()
 
