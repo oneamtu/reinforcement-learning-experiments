@@ -8,6 +8,15 @@ Implements an &epsilon;-greedy agent with two action-value learning algorithms:
 
 Uses a modified version of the 10-armed testbed in which all the q*(a) start out equally at zero and then take independent random walks.
 
+# Result
+
+Orange - fixed step
+Blue - sample-averaging
+Why? Because by using a fixed step, initial values will decay in time. At step n, value 1 contributes (1-&alpha;)^n to the value estimate, rather
+than 1/n. With n = 100, that's 2e-5 vs 1e-2. 
+
+![image info](./sample-average-vs-fixed-step.png)
+
 # Usage
 
 ```
