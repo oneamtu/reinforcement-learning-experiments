@@ -78,7 +78,7 @@ def value_iteration(env:EnvWithModel, initV:np.array, theta:float) -> Tuple[np.a
     """
 
     V = np.copy(initV)
-    optimal_state_actions = {}
+    optimal_state_actions = np.zeros(env.spec.nS)
 
     delta = theta
     while delta >= theta:
