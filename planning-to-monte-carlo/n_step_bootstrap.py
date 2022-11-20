@@ -28,6 +28,23 @@ def on_policy_n_step_td(
     # sampling (Hint: Sutton Book p. 144)
     #####################
 
+    V = np.copy(initV)
+
+    # pre-compute gammas power series
+    gammas = np.power(env_spec.gamma, range(n+1))
+
+    for episode in trajs:
+        T = len(episode)
+        for tau in range(T):
+            state_tau = episode[tau][0]
+            len_mc = min(tau + n, T) - tau
+            rewards = np.array([reward for (_, _, reward, _) in episode[tau:tau+len_mc]])
+            G = np.sum(gammas[:len_mc] * rewards)
+            assert(gammas[len_mc] == gammas[-1])
+            if tau + n < T:
+                G += gammas[len_mc] * V[episode[tau+n][0]]
+            V[state_tau] += alpha * (G - V[state_tau])
+
     return V
 
 def off_policy_n_step_sarsa(
