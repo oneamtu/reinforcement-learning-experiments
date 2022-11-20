@@ -1,6 +1,8 @@
 from functools import partial
 import numpy as np
 from tqdm import tqdm
+import pickle
+import os
 
 from env import EnvSpec, Env, EnvWithModel
 from policy import Policy
@@ -25,7 +27,7 @@ if __name__ == "__main__":
     class OneStateMDP(Env): # MDP introduced at Fig 5.4 in Sutton Book
         def __init__(self):
             final_state = 1
-            env_spec=EnvSpec(2,2,1.,[final_state])
+            env_spec=EnvSpec(2,2,1.)
 
             super().__init__(env_spec)
             self.final_state = final_state
@@ -96,20 +98,27 @@ if __name__ == "__main__":
     N_EPISODES = 100000
 
     trajs = []
-    for _ in tqdm(range(N_EPISODES)):
-        states, actions, rewards, done =\
-            [env.reset()], [], [], []
 
-        while not done:
-            a = behavior_policy.action(states[-1])
-            s, r, done = env.step(a)
+    cached_path = f'trajs.pkl'
+    if os.path.exists(cached_path):
+        trajs = pickle.load(open(cached_path, 'rb'))
+    else:
+        for _ in tqdm(range(N_EPISODES)):
+            states, actions, rewards, done =\
+                [env.reset()], [], [], []
 
-            states.append(s)
-            actions.append(a)
-            rewards.append(r)
+            while not done:
+                a = behavior_policy.action(states[-1])
+                s, r, done = env.step(a)
 
-        traj = list(zip(states[:-1],actions,rewards,states[1:]))
-        trajs.append(traj)
+                states.append(s)
+                actions.append(a)
+                rewards.append(r)
+
+            traj = list(zip(states[:-1],actions,rewards,states[1:]))
+            trajs.append(traj)
+
+        pickle.dump(trajs, open(cached_path, 'wb'))
 
     # On-poilicy evaluation test
     Q_est_ois = mc_ois(env.spec,trajs,behavior_policy,behavior_policy,np.zeros((env.spec.nS,env.spec.nA)))
