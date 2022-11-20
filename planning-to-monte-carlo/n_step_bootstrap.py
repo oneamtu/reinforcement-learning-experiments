@@ -36,16 +36,32 @@ def on_policy_n_step_td(
     for episode in trajs:
         T = len(episode)
         for tau in range(T):
-            state_tau = episode[tau][0]
+            (state_tau, _, _, _) = episode[tau]
+
             len_mc = min(tau + n, T) - tau
+            # TODO: this could be O(1) rather than O(n)
             rewards = np.array([reward for (_, _, reward, _) in episode[tau:tau+len_mc]])
             G = np.sum(gammas[:len_mc] * rewards)
-            assert(gammas[len_mc] == gammas[-1])
             if tau + n < T:
                 G += gammas[len_mc] * V[episode[tau+n][0]]
             V[state_tau] += alpha * (G - V[state_tau])
 
     return V
+
+class DeterministicPolicy(Policy):
+    """
+    Deterministic Policy
+
+    Each state has only one (optimal) action; the probability of that action is 1
+    """
+    def __init__(self, state_actions:dict):
+        self._state_actions = state_actions
+
+    def action_prob(self,state,action=None):
+        return 1 if self._state_actions[state] == action else 0
+
+    def action(self,state):
+        return self._state_actions[state]
 
 def off_policy_n_step_sarsa(
     env_spec:EnvSpec,
@@ -69,9 +85,30 @@ def off_policy_n_step_sarsa(
         policy: $pi_star$; instance of policy class
     """
 
-    #####################
-    # TODO: Implement Off Policy n-Step SARSA algorithm
-    # sampling (Hint: Sutton Book p. 149)
-    #####################
+    Q = np.copy(initQ)
+    state_transitions = np.random.choice(env_spec.nA, env_spec.nS)
+    pi = DeterministicPolicy(state_transitions)
+
+    # pre-compute gammas power series
+    gammas = np.power(env_spec.gamma, range(n+1))
+
+    for episode in trajs:
+        T = len(episode)
+        for tau in range(T):
+            (state_tau, action_tau, _, _) = episode[tau]
+
+            rho = 1
+            for i in range(tau+1, min(tau+n, T-1)+1):
+                (state_i, action_i, _, _) = episode[i]
+                rho *= pi.action_prob(state_i, action_i) / bpi.action_prob(state_i, action_i)
+
+            len_mc = min(tau + n, T) - tau
+            # TODO: this could be O(1) rather than O(n)
+            rewards = np.array([reward for (_, _, reward, _) in episode[tau:tau+len_mc]])
+            G = np.sum(gammas[:len_mc] * rewards)
+            if tau + n < T:
+                G += gammas[len_mc] * Q[episode[tau+n][0], episode[tau+n][1]]
+            Q[state_tau, action_tau] += alpha * rho * (G - Q[state_tau, action_tau])
+            state_transitions[state_tau] = np.argmax(Q[state_tau])
 
     return Q, pi
