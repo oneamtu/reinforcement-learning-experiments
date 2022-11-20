@@ -4,11 +4,10 @@ Skeleton code from class
 import numpy as np
 
 class EnvSpec(object):
-    def __init__(self,nS,nA,gamma, final_states):
+    def __init__(self,nS,nA,gamma):
         self._nS = nS
         self._nA = nA
         self._gamma = gamma
-        self._final_states = final_states
 
     @property
     def nS(self) -> int:
