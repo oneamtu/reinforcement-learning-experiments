@@ -29,7 +29,7 @@ def off_policy_mc_prediction_ordinary_importance_sampling(
     for episode in trajs:
         G = 0
         W = 1
-        # s_{t-1}, a_{t-1}, r_t, s_t
+        # (s_t,a_t,r_{t+1},s_{t+1})
         for (state, action, reward, _state_p) in episode:
             if W == 0:
                 break
@@ -66,7 +66,7 @@ def off_policy_mc_prediction_weighted_importance_sampling(
     for episode in trajs:
         G = 0
         W = 1
-        # s_{t-1}, a_{t-1}, r_t, s_t
+        # (s_t,a_t,r_{t+1},s_{t+1})
         for (state, action, reward, _state_p) in episode:
             if W == 0:
                 break
