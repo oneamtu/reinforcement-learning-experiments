@@ -1,0 +1,43 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/python
+{
+    "name": "Python 3",
+    "image": "mcr.microsoft.com/devcontainers/python:3.11",
+    "features": {
+        "ghcr.io/devcontainers/features/desktop-lite:1": {
+            "password": "hidden-tree",
+            "webPort": "6080",
+            "vncPort": "5901"
+        }
+    },
+    "runArgs": [
+        "--shm-size=1g"
+    ],
+
+
+    // Use 'postCreateCommand' to run commands after the container is created.
+    // "postCreateCommand": "pip3 install --user -r requirements.txt",
+
+    // Configure tool-specific properties.
+    // "customizations": {},
+
+    // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+    // "remoteUser": "root"
+    // "build": {
+    //     "dockerfile": "Dockerfile"
+    // },
+
+    // Configure tool-specific properties.
+    "forwardPorts": [6080],
+    "portsAttributes": {
+        "6080": {
+            "label": "Desktop access",
+            "onAutoForward": "silent"
+        },
+        "5901": {
+            "label": "VNC TCP port",
+            "onAutoForward": "silent"
+        }
+    }
+}
+
