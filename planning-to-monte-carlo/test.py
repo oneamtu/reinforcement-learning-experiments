@@ -1,3 +1,5 @@
+# code from learning resource
+# https://learning.edx.org/course/course-v1:UTAustinX+CSMS.ML.323+1T2022/block-v1:UTAustinX+CSMS.ML.323+1T2022+type@sequential+block@721383d3bf624baaacfa0d56f0dc8407/block-v1:UTAustinX+CSMS.ML.323+1T2022+type@vertical+block@9b65cf246eb44051a92c5b45e48e351a
 from functools import partial
 import numpy as np
 from tqdm import tqdm
