@@ -2,8 +2,9 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/python
 {
     "name": "Python 3",
-    "image": "mcr.microsoft.com/devcontainers/python:3.11",
+    "image": "mcr.microsoft.com/devcontainers/python:3.8",
     "features": {
+        // https://github.com/devcontainers/features/tree/main/src/desktop-lite
         "ghcr.io/devcontainers/features/desktop-lite:1": {
             "password": "hidden-tree",
             "webPort": "6080",
@@ -14,9 +15,8 @@
         "--shm-size=1g"
     ],
 
-
     // Use 'postCreateCommand' to run commands after the container is created.
-    // "postCreateCommand": "pip3 install --user -r requirements.txt",
+    "postCreateCommand": "pip3 install --user -r requirements.txt --no-cache-dir",
 
     // Configure tool-specific properties.
     // "customizations": {},
