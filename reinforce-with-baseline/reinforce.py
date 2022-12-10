@@ -27,10 +27,11 @@ class PiApproximationWithNN():
         self.num_actions = num_actions
         self.optimizer = optim.Adam(self.model.parameters(), lr=alpha, betas=(0.9, 0.999))
 
-    def __call__(self,s) -> torch.tensor:
+    def __call__(self,s) -> int:
         self.model.eval()
         input = torch.from_numpy(s).float()
-        return self.model(input)
+        action_probs = self.model(input)
+        return np.argmax(np.random.multinomial(1, action_probs.detach().numpy()))       
     
     def update(self, s, a, gamma_t, delta):
         """
@@ -130,12 +131,14 @@ def REINFORCE(
     Gs = []
 
     for episode_i in range(num_episodes):
-        states, actions, rewards, done = [env.reset()], [], [], False
+        states, actions, rewards, done = [env.reset()], [], [0], False
+
+        G_0 = 0
+        gamma_i = 1
 
         # generate episode
         while not done:
-            action_probs = pi(states[-1])
-            action = np.argmax(np.random.multinomial(1, action_probs.detach().numpy()))
+            action = pi(states[-1])
             state, reward, done, _ = env.step(action)
             # env.render()
 
@@ -143,23 +146,27 @@ def REINFORCE(
             actions.append(action)
             rewards.append(reward)
 
+            gamma_i *= gamma
+            G_0 += reward * gamma_i
+        
         T = len(states) - 1 # ignore final state/action
-        gammas = np.power(gamma, range(T))
-        R = np.array(rewards)
         V_loss = 0
         pi_loss = 0
+        Gs.append(G_0)
+        G = G_0
 
         # REINFORCE
+        gamma_t = 1
         for t in range(T):
             S_t = states[t]
             A_t = actions[t]
+            gamma_t *= gamma
 
-            G = np.sum(gammas[:(T-t)] * R[t:])
-            if t == 0: Gs.append(G)
+            G = (G - rewards[t])/gamma_t
 
             delta = G - V(S_t)
             V_loss += V.update(S_t, G)
-            pi_loss += pi.update(S_t, A_t, gammas[t], delta)
-        print(f'Episode {episode_i}: V_loss {V_loss} pi_loss {pi_loss} G_0 {Gs[-1]}')
+            pi_loss += pi.update(S_t, A_t, gamma_t, delta)
+        # print(f'Episode {episode_i}: V_loss {V_loss} pi_loss {pi_loss} G_0 {G_0}')
 
     return Gs
